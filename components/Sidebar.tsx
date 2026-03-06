@@ -9,8 +9,10 @@ import {
   Settings,
   Zap,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "./SidebarContext";
 
 const NAV_ITEMS = [
   {
@@ -39,11 +41,12 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { isOpen, close } = useSidebar();
 
-  return (
-    <aside className="w-60 min-h-screen bg-gray-950 flex flex-col">
+  const sidebarContent = (
+    <aside className="w-60 h-full bg-gray-950 flex flex-col">
       {/* Logo */}
-      <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
+      <div className="px-5 pt-6 pb-5 border-b border-white/[0.06] flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center shadow-glow">
             <Zap size={16} className="text-white" fill="white" />
@@ -55,6 +58,13 @@ export default function Sidebar() {
             <p className="text-white/40 text-[10px] mt-0.5">Powered by Lightstone</p>
           </div>
         </div>
+        {/* Close button – mobile only */}
+        <button
+          onClick={close}
+          className="md:hidden p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <X size={16} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -70,6 +80,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.soon ? "#" : item.href}
+              onClick={() => close()}
               className={cn(
                 "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 isActive
@@ -110,5 +121,29 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar – always visible on md+ */}
+      <div className="hidden md:flex min-h-screen w-60 flex-shrink-0">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile sidebar – slide-over */}
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            onClick={close}
+          />
+          {/* Drawer */}
+          <div className="md:hidden fixed inset-y-0 left-0 z-50 flex">
+            {sidebarContent}
+          </div>
+        </>
+      )}
+    </>
   );
 }

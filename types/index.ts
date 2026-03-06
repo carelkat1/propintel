@@ -23,9 +23,16 @@ export type SellCriterion =
   | "Upsizing Candidate"
   | "Absentee Owner";
 
+export interface CriterionDetail {
+  name: SellCriterion;
+  weight: number;
+  explanation: string;
+}
+
 export interface Property {
   id: string;
-  address: string;
+  // ── Lightstone API field equivalents ──────────────────────────────────────
+  address: string;               // streetAddress
   suburb: string;
   city: string;
   province: string;
@@ -34,25 +41,28 @@ export interface Property {
   bedrooms: number;
   bathrooms: number;
   garages: number;
-  erfSize: number; // sqm
-  floorSize: number; // sqm
-  estimatedValue: number; // ZAR
-  lastSaleDate: string; // ISO date
-  lastSalePrice: number; // ZAR
-  ownerName: string;
+  erfSize: number;               // erfExtent (m²)
+  floorSize: number;             // grossFloorArea (m²)
+  estimatedValue: number;        // avm – Automated Valuation Model (ZAR)
+  lastSaleDate: string;          // lastTransferDate (ISO)
+  lastSalePrice: number;         // lastTransferPrice (ZAR)
+  ownerName: string;             // registeredOwner
   ownerEmail: string;
   ownerPhone: string;
-  ownerAge: number;
-  yearsOwned: number;
-  municipalValuation: number; // ZAR
-  neighborhoodSalesVelocity: number; // transactions / year in 500m radius
-  hasRenovationPermit: boolean;
-  hasDivorceRecord: boolean;
-  hasEstateRecord: boolean;
-  isAbsenteeOwner: boolean;
-  hasFinancialStressIndicator: boolean;
-  likelinessScore: number; // 0–100
+  ownerAge: number;              // derived from ownerDateOfBirth
+  yearsOwned: number;            // derived from lastTransferDate
+  municipalValuation: number;    // municipalValue (ZAR)
+  neighborhoodSalesVelocity: number; // neighbourhood analytics (tx/year, 500m radius)
+  hasRenovationPermit: boolean;  // council permit data
+  hasDivorceRecord: boolean;     // deeds/court data integration
+  hasEstateRecord: boolean;      // deceased estate registry
+  isAbsenteeOwner: boolean;      // owner address vs property address mismatch
+  hasFinancialStressIndicator: boolean; // credit bureau integration
+  // ── Computed by prediction engine ─────────────────────────────────────────
+  likelinessScore: number;       // 0–100
   criteria: SellCriterion[];
+  criteriaDetails: CriterionDetail[];
+  // ── Display ───────────────────────────────────────────────────────────────
   imageUrl: string;
   lat: number;
   lng: number;
@@ -72,7 +82,7 @@ export interface Note {
   id: string;
   type: NoteType;
   content: string;
-  timestamp: string; // ISO datetime
+  timestamp: string;
   agent: string;
 }
 
@@ -87,11 +97,12 @@ export interface Lead {
   estimatedValue: number;
   likelinessScore: number;
   criteria: SellCriterion[];
+  criteriaDetails?: CriterionDetail[];
   status: LeadStatus;
   notes: Note[];
   assignedAgent: string;
-  createdAt: string; // ISO datetime
-  updatedAt: string; // ISO datetime
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── API Response Types ───────────────────────────────────────────────────────
@@ -99,7 +110,9 @@ export interface Lead {
 export interface PropertiesResponse {
   properties: Property[];
   total: number;
-  highConfidence: number; // >= 70
+  highConfidence: number;
+  moderate: number;
+  watchList: number;
   averageScore: number;
 }
 

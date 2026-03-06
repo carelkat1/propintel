@@ -39,7 +39,7 @@ export default function FilterBar({
   totalAll,
 }: FilterBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 px-8 pb-4">
+    <div className="flex flex-wrap items-center gap-3 px-4 md:px-8 pb-4">
       {/* Filter pills */}
       <div className="flex items-center gap-1.5 flex-wrap">
         <SlidersHorizontal size={13} className="text-gray-400 mr-0.5" />

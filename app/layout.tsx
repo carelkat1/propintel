@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import { SidebarProvider } from "@/components/SidebarContext";
 
 export const metadata: Metadata = {
   title: "PropIntel — Predictive Property Intelligence",
@@ -17,10 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex min-h-screen bg-surface">
-        <Sidebar />
-        <main className="flex-1 min-w-0 flex flex-col min-h-screen">
-          {children}
-        </main>
+        <SidebarProvider>
+          <Sidebar />
+          <main className="flex-1 min-w-0 flex flex-col min-h-screen">
+            {children}
+          </main>
+        </SidebarProvider>
       </body>
     </html>
   );

@@ -171,7 +171,7 @@ export default function CRMPage() {
       />
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-8 py-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-4 md:px-8 py-4 md:py-6">
         {summaryStats.map((s) => {
           const Icon = s.icon;
           return (
@@ -202,7 +202,7 @@ export default function CRMPage() {
           onLeadClick={setSelectedLead}
         />
       ) : (
-        <div className="px-8 pb-8 flex-1 overflow-auto">
+        <div className="px-4 md:px-8 pb-8 flex-1 overflow-auto">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden">
             <table className="w-full text-sm">
               <thead>

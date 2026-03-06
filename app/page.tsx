@@ -13,6 +13,7 @@ import StatsBar from "@/components/StatsBar";
 import FilterBar from "@/components/FilterBar";
 import PropertyCard from "@/components/PropertyCard";
 import AddToCRMModal from "@/components/AddToCRMModal";
+import PropertyDetailModal from "@/components/PropertyDetailModal";
 import { RefreshCw } from "lucide-react";
 
 export default function DashboardPage() {
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [sortKey, setSortKey] = useState<SortKey>("likelinessScore");
   const [searchQuery, setSearchQuery] = useState("");
   const [crmModal, setCrmModal] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   async function fetchData(showRefreshing = false) {
@@ -145,7 +147,7 @@ export default function DashboardPage() {
       )}
 
       {/* Property grid / list */}
-      <div className="px-8 pb-8 flex-1">
+      <div className="px-4 md:px-8 pb-8 flex-1">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
@@ -161,6 +163,7 @@ export default function DashboardPage() {
                 key={property.id}
                 property={property}
                 viewMode="grid"
+                onSelect={(p) => setSelectedProperty(p)}
                 onAddTocrm={(p) => setCrmModal(p)}
               />
             ))}
@@ -172,12 +175,25 @@ export default function DashboardPage() {
                 key={property.id}
                 property={property}
                 viewMode="list"
+                onSelect={(p) => setSelectedProperty(p)}
                 onAddTocrm={(p) => setCrmModal(p)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Property detail drill-down modal */}
+      {selectedProperty && (
+        <PropertyDetailModal
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+          onAddTocrm={(p) => {
+            setSelectedProperty(null);
+            setCrmModal(p);
+          }}
+        />
+      )}
 
       {/* Add to CRM modal */}
       {crmModal && (

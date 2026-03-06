@@ -21,12 +21,14 @@ interface PropertyCardProps {
   property: Property;
   viewMode: "grid" | "list";
   onAddTocrm?: (property: Property) => void;
+  onSelect?: (property: Property) => void;
 }
 
 export default function PropertyCard({
   property,
   viewMode,
   onAddTocrm,
+  onSelect,
 }: PropertyCardProps) {
   const [hovered, setHovered] = useState(false);
   const colors = getScoreColor(property.likelinessScore);
@@ -35,12 +37,16 @@ export default function PropertyCard({
   if (viewMode === "list") {
     return (
       <div
-        className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 border border-gray-100 hover:border-gray-200 shadow-card hover:shadow-card-hover transition-all duration-200 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        className="group flex items-center gap-4 bg-white rounded-2xl px-4 md:px-5 py-4 border border-gray-100 hover:border-gray-200 shadow-card hover:shadow-card-hover transition-all duration-200 cursor-pointer"
+        onClick={() => onSelect?.(property)}
+        onKeyDown={(e) => e.key === "Enter" && onSelect?.(property)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {/* Thumbnail */}
-        <div className="relative w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+        <div className="relative w-16 md:w-20 h-14 md:h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
           <Image
             src={property.imageUrl}
             alt={property.address}
@@ -66,8 +72,8 @@ export default function PropertyCard({
           </div>
         </div>
 
-        {/* Specs */}
-        <div className="hidden md:flex items-center gap-4 text-xs text-gray-500">
+        {/* Specs – hidden on small screens */}
+        <div className="hidden lg:flex items-center gap-4 text-xs text-gray-500">
           <span className="flex items-center gap-1">
             <Bed size={12} /> {property.bedrooms}
           </span>
@@ -79,8 +85,8 @@ export default function PropertyCard({
           </span>
         </div>
 
-        {/* Value */}
-        <div className="hidden lg:block text-right">
+        {/* Value – hidden on small screens */}
+        <div className="hidden xl:block text-right">
           <p className="font-semibold text-gray-900 text-sm">
             {formatCurrency(property.estimatedValue, true)}
           </p>
@@ -100,13 +106,16 @@ export default function PropertyCard({
                 e.stopPropagation();
                 onAddTocrm(property);
               }}
-              className="flex items-center gap-1.5 text-xs font-medium text-accent-500 hover:text-accent-600 bg-accent-50 hover:bg-accent-100 px-3 py-1.5 rounded-lg transition-colors"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-accent-500 hover:text-accent-600 bg-accent-50 hover:bg-accent-100 px-3 py-1.5 rounded-lg transition-colors"
             >
               <Plus size={12} />
               CRM
             </button>
           )}
-          <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+          <ChevronRight
+            size={16}
+            className="text-gray-300 group-hover:text-gray-500 transition-colors"
+          />
         </div>
       </div>
     );
@@ -115,8 +124,12 @@ export default function PropertyCard({
   // Grid view
   return (
     <div
+      role="button"
+      tabIndex={0}
       className="group bg-white rounded-2xl border border-gray-100 hover:border-gray-200 shadow-card hover:shadow-card-hover overflow-hidden transition-all duration-300 flex flex-col cursor-pointer"
       style={{ transform: hovered ? "translateY(-2px)" : "none" }}
+      onClick={() => onSelect?.(property)}
+      onKeyDown={(e) => e.key === "Enter" && onSelect?.(property)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -127,7 +140,7 @@ export default function PropertyCard({
           alt={property.address}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {/* Score badge overlay */}
         <div className="absolute top-3 right-3">
