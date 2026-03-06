@@ -9,6 +9,8 @@ export async function GET() {
     const properties = getLightstoneProperties(48);
 
     const highConfidence = properties.filter((p) => p.likelinessScore >= 70).length;
+    const moderate = properties.filter((p) => p.likelinessScore >= 45 && p.likelinessScore < 70).length;
+    const watchList = properties.filter((p) => p.likelinessScore < 45).length;
     const averageScore =
       properties.length > 0
         ? Math.round(
@@ -21,6 +23,8 @@ export async function GET() {
       properties,
       total: properties.length,
       highConfidence,
+      moderate,
+      watchList,
       averageScore,
     };
 
