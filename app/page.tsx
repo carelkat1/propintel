@@ -188,7 +188,7 @@ export default function DashboardPage() {
         <PropertyDetailModal
           property={selectedProperty}
           onClose={() => setSelectedProperty(null)}
-          onAddTocrm={(p) => {
+          onAddToCrm={(p) => {
             setSelectedProperty(null);
             setCrmModal(p);
           }}
