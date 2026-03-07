@@ -2,69 +2,66 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: [
-          "-apple-system",
-          "BlinkMacSystemFont",
-          "SF Pro Display",
-          "Inter",
-          "Segoe UI",
-          "sans-serif",
-        ],
-      },
       colors: {
-        accent: {
-          DEFAULT: "#007AFF",
-          50: "#EBF4FF",
-          100: "#D0E8FF",
-          200: "#A1D1FF",
-          300: "#66B5FF",
-          400: "#3D9EFF",
-          500: "#007AFF",
-          600: "#0062CC",
-          700: "#004A99",
-          800: "#003366",
-          900: "#001A33",
+        bg: {
+          DEFAULT: "#080c14",
+          card: "#0c1220",
+          input: "#0a0f1a",
+          nav: "#0a0e18",
         },
-        surface: {
-          DEFAULT: "#F5F5F7",
-          card: "#FFFFFF",
-          elevated: "#FBFBFD",
+        border: {
+          DEFAULT: "#141c2e",
+          hover: "#334155",
+          nav: "#111827",
         },
+        brand: {
+          DEFAULT: "#10b981",
+          dark: "#059669",
+        },
+        score: {
+          hot: "#ef4444",
+          warm: "#f97316",
+          watch: "#eab308",
+          cold: "#22c55e",
+        },
+        text: {
+          primary: "#f1f5f9",
+          secondary: "#94a3b8",
+          muted: "#64748b",
+          dim: "#475569",
+        },
+        whatsapp: "#25D366",
+        email: "#0ea5e9",
       },
-      backdropBlur: {
-        xs: "2px",
-      },
-      boxShadow: {
-        card: "0 2px 20px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04)",
-        "card-hover":
-          "0 8px 40px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06)",
-        glow: "0 0 20px rgba(0, 122, 255, 0.15)",
-      },
-      animation: {
-        "ring-fill": "ringFill 1.2s ease-out forwards",
-        "fade-up": "fadeUp 0.4s ease-out forwards",
-        "scale-in": "scaleIn 0.2s ease-out forwards",
+      fontFamily: {
+        sans: ["'Nunito Sans'", "sans-serif"],
+        mono: ["'Azeret Mono'", "monospace"],
+        heading: ["'Outfit'", "sans-serif"],
       },
       keyframes: {
-        ringFill: {
-          "0%": { strokeDashoffset: "251.2" },
-          "100%": { strokeDashoffset: "var(--target-offset)" },
-        },
         fadeUp: {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
-        scaleIn: {
-          "0%": { opacity: "0", transform: "scale(0.95)" },
-          "100%": { opacity: "1", transform: "scale(1)" },
+        slideIn: {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(0)" },
         },
+        slideUp: {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-up": "fadeUp 0.35s ease both",
+        "slide-in": "slideIn 0.25s ease",
+        "slide-up": "slideUp 0.3s ease",
       },
     },
   },
