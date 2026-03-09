@@ -1,60 +1,47 @@
-"use client";
+'use client';
 
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
-import { Suburb } from "@/lib/types";
-
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { Suburb } from '@/lib/types';
+import { formatZAR, scoreColor } from '@/lib/utils';
+import { MAP_CENTER, MAP_ZOOM, MAP_TILES, MAP_ATTRIBUTION } from '@/lib/constants';
+import 'leaflet/dist/leaflet.css';
 
 interface SuburbMapProps {
   suburbs: Suburb[];
-  farmed: string[];
-  onToggle: (name: string) => void;
-  onDrill: (name: string) => void;
+  farmedIds: string[];
+  onSelectSuburb: (suburb: Suburb) => void;
 }
 
-export default function SuburbMap({ suburbs, farmed, onToggle, onDrill }: SuburbMapProps) {
+export default function SuburbMap({ suburbs, farmedIds, onSelectSuburb }: SuburbMapProps) {
   return (
-    <MapContainer
-      center={[-26.09, 28.045]}
-      zoom={12}
-      style={{ width: "100%", height: "100%", borderRadius: 10, minHeight: 400 }}
-      scrollWheelZoom={true}
-      zoomControl={false}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      />
-      {suburbs.map((s) => {
-        const isFarmed = farmed.includes(s.name);
-        return (
+    <div className="rounded-card overflow-hidden shadow-card h-[350px] lg:h-auto">
+      <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM} className="h-full w-full" style={{ minHeight: 350 }} scrollWheelZoom={true} zoomControl={true}>
+        <TileLayer url={MAP_TILES} attribution={MAP_ATTRIBUTION} />
+        {suburbs.map(sub => (
           <CircleMarker
-            key={s.name}
-            center={[s.lat, s.lng]}
-            radius={isFarmed ? 16 : 8}
+            key={sub.id}
+            center={[sub.lat, sub.lng]}
+            radius={Math.max(8, sub.hotLeads * 1.5)}
             pathOptions={{
-              color: isFarmed ? s.color : "#334155",
-              fillColor: s.color,
-              fillOpacity: isFarmed ? 0.3 : 0.15,
+              color: farmedIds.includes(sub.id) ? scoreColor(sub.score) : '#AEAEB2',
+              fillColor: farmedIds.includes(sub.id) ? scoreColor(sub.score) : '#AEAEB2',
+              fillOpacity: 0.3,
               weight: 2,
             }}
             eventHandlers={{
-              click: () => {
-                if (isFarmed) {
-                  onDrill(s.name);
-                } else {
-                  onToggle(s.name);
-                }
-              },
+              click: () => farmedIds.includes(sub.id) && onSelectSuburb(sub),
             }}
           >
-            <Tooltip direction="top" offset={[0, -10]} permanent={isFarmed}>
-              <div style={{ background: "#0c1220", color: "#f1f5f9", padding: "4px 8px", borderRadius: 4, border: "1px solid #1e293b", fontSize: 11, fontWeight: 600 }}>
-                {s.name} {isFarmed && `(${s.hotLeads} hot)`}
+            <Popup>
+              <div className="text-center p-1">
+                <p className="font-semibold text-sm">{sub.name}</p>
+                <p className="text-xs text-gray-600">Score: {sub.score} · {sub.hotLeads} hot leads</p>
+                <p className="text-xs text-gray-600">Avg: {formatZAR(sub.avgPrice)}</p>
               </div>
-            </Tooltip>
+            </Popup>
           </CircleMarker>
-        );
-      })}
-    </MapContainer>
+        ))}
+      </MapContainer>
+    </div>
   );
 }

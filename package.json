@@ -1,6 +1,6 @@
 {
   "name": "propscout",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -18,7 +18,8 @@
     "leaflet": "^1.9.4",
     "clsx": "^2.1.0",
     "tailwind-merge": "^2.2.1",
-    "class-variance-authority": "^0.7.0"
+    "class-variance-authority": "^0.7.0",
+    "framer-motion": "^11.0.0"
   },
   "devDependencies": {
     "typescript": "^5",

@@ -1,38 +1,25 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Sidebar from "@/components/layout/sidebar";
-import Topbar from "@/components/layout/topbar";
-import MobileNav from "@/components/layout/mobile-nav";
+import type { Metadata } from 'next';
+import './globals.css';
+import Sidebar from '@/components/layout/sidebar';
+import Topbar from '@/components/layout/topbar';
+import MobileNav from '@/components/layout/mobile-nav';
+import { ClientInit } from '@/components/shared/client-init';
 
 export const metadata: Metadata = {
-  title: "PropScout — Predictive Real Estate Lead Generation",
-  description: "AI-powered property prospecting for South African real estate agents",
+  title: 'PropScout — Referral Agency Platform',
+  description: 'AI-powered property referral agency for South Africa',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&family=Azeret+Mono:wght@400;500;600;700;800&family=Outfit:wght@300;400;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        />
-      </head>
-      <body className="font-sans antialiased min-h-screen bg-bg text-text-primary">
+      <body className="bg-bg-primary font-body antialiased">
+        <ClientInit />
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto relative pb-16 md:pb-0">
+          <main className="flex-1 min-w-0">
             <Topbar />
-            <div className="p-4 md:p-6 max-w-[960px]">
+            <div className="p-4 md:p-6 pb-20 md:pb-6">
               {children}
             </div>
           </main>

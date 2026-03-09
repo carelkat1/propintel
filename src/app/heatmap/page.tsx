@@ -1,81 +1,71 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { SUBURBS } from "@/data/suburbs";
-import { Suburb } from "@/lib/types";
-import SectionTitle from "@/components/shared/section-title";
-import CardDark from "@/components/shared/card-dark";
-import Btn from "@/components/shared/btn";
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import PageHeader from '@/components/shared/page-header';
+import SegmentedControl from '@/components/shared/segmented-control';
+import { suburbs } from '@/data/suburbs';
+import { formatZAR, scoreColor } from '@/lib/utils';
 
-type MetricKey = "score" | "growth" | "velocity";
+const HeatmapMap = dynamic(() => import('@/components/farm/suburb-map'), {
+  ssr: false,
+  loading: () => <div className="h-[250px] bg-bg-hover rounded-card animate-pulse" />,
+});
 
-const metrics: Record<MetricKey, { key: MetricKey; label: string; fmt: (v: number) => string; max: number }> = {
-  score: { key: "score", label: "Propensity Score", fmt: (v) => String(v), max: 100 },
-  growth: { key: "growth", label: "Price Growth", fmt: (v) => v + "%", max: 15 },
-  velocity: { key: "velocity", label: "Sales/mo", fmt: (v) => String(v), max: 30 },
-};
-
-function getSuburbMetric(s: Suburb, key: MetricKey): number {
-  return s[key];
-}
+type Metric = 'Score' | 'Growth' | 'Velocity';
 
 export default function HeatmapPage() {
-  const [metric, setMetric] = useState<MetricKey>("score");
-  const m = metrics[metric];
+  const [metric, setMetric] = useState<Metric>('Score');
+
+  function getValue(sub: typeof suburbs[0]): number {
+    if (metric === 'Score') return sub.score;
+    if (metric === 'Growth') return sub.growth;
+    return sub.velocity;
+  }
+
+  function getColor(val: number): string {
+    if (metric === 'Score') return scoreColor(val);
+    if (metric === 'Growth') return val > 8 ? '#34C759' : val > 5 ? '#FF9500' : '#FF3B30';
+    return val > 20 ? '#34C759' : val > 12 ? '#FF9500' : '#FF3B30';
+  }
+
+  function getLabel(val: number): string {
+    if (metric === 'Score') return val.toString();
+    if (metric === 'Growth') return `${val}%`;
+    return `${val}/mo`;
+  }
+
+  const sorted = [...suburbs].sort((a, b) => getValue(b) - getValue(a));
+  const maxVal = Math.max(...sorted.map(s => getValue(s)));
 
   return (
     <div>
-      <SectionTitle sub="Compare suburbs at a glance to find the best farm areas.">
-        🗺 Neighbourhood Heatmap
-      </SectionTitle>
-      <div className="flex gap-1.5 mb-4 flex-wrap">
-        {(Object.entries(metrics) as [MetricKey, typeof m][]).map(([k, v]) => (
-          <Btn
-            key={k}
-            color={metric === k ? "#10b981" : "#475569"}
-            variant={metric === k ? "filled" : "ghost"}
-            onClick={() => setMetric(k)}
-            style={{ fontSize: 11, padding: "5px 12px" }}
-          >
-            {v.label}
-          </Btn>
-        ))}
-      </div>
-      <CardDark className="p-5">
-        {[...SUBURBS]
-          .sort((a, b) => getSuburbMetric(b, m.key) - getSuburbMetric(a, m.key))
-          .map((s, i) => {
-            const val = getSuburbMetric(s, m.key);
-            const pct = (val / m.max) * 100;
-            const heat = pct > 70 ? "#ef4444" : pct > 50 ? "#f97316" : pct > 30 ? "#eab308" : "#22c55e";
-            return (
-              <div
-                key={s.name}
-                className="animate-fade-up flex items-center gap-3 mb-1.5"
-                style={{ animationDelay: `${i * 0.03}s` }}
-              >
-                <span className="text-text-secondary text-[11px] w-[110px] text-right font-semibold flex-shrink-0">
-                  {s.name}
-                </span>
-                <div className="flex-1 h-[26px] bg-bg-input rounded-[5px] overflow-hidden flex gap-0.5 p-[3px]">
-                  {Array.from({ length: 20 }).map((_, j) => (
-                    <div
-                      key={j}
-                      className="flex-1 rounded-sm transition-colors"
-                      style={{
-                        background: j < Math.round(pct / 5) ? `${heat}${String(40 + j * 3)}` : "#141c2e",
-                        transitionDelay: `${j * 0.02}s`,
-                      }}
-                    />
-                  ))}
+      <PageHeader title="Heatmap" subtitle="Neighbourhood performance comparison">
+        <SegmentedControl options={['Score', 'Growth', 'Velocity']} value={metric} onChange={v => setMetric(v as Metric)} />
+      </PageHeader>
+
+      <div className="space-y-2 mb-6">
+        {sorted.map(sub => {
+          const val = getValue(sub);
+          const width = Math.max(10, (val / maxVal) * 100);
+          const color = getColor(val);
+          return (
+            <div key={sub.id} className="flex items-center gap-3">
+              <span className="w-28 text-right text-[13px] text-text-secondary font-medium flex-shrink-0 truncate">{sub.name}</span>
+              <div className="flex-1">
+                <div className="h-9 rounded-lg flex items-center px-3 transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: `${color}20`, borderLeft: `3px solid ${color}` }}>
+                  <span className="font-mono text-[13px] font-bold" style={{ color }}>{getLabel(val)}</span>
                 </div>
-                <span className="font-mono text-[13px] font-extrabold w-[50px] text-right" style={{ color: heat }}>
-                  {m.fmt(val)}
-                </span>
               </div>
-            );
-          })}
-      </CardDark>
+              <span className="font-mono text-[12px] text-text-tertiary w-20 text-right flex-shrink-0">
+                {formatZAR(sub.avgPrice)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <HeatmapMap suburbs={suburbs} farmedIds={suburbs.map(s => s.id)} onSelectSuburb={() => {}} />
     </div>
   );
 }

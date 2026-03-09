@@ -2,41 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-}
+@import 'leaflet/dist/leaflet.css';
 
 body {
-  background: #080c14;
-  color: #e2e8f0;
-  font-family: 'Nunito Sans', sans-serif;
+  background: #F5F5F7;
+  color: #1D1D1F;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+.frosted-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.frosted-glass-heavy {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #C7C7CC;
   border-radius: 3px;
 }
-
-.feat-card {
-  transition: all 0.15s;
-}
-.feat-card:hover {
-  border-color: #334155 !important;
+::-webkit-scrollbar-thumb:hover {
+  background: #AEAEB2;
 }
 
-select {
-  cursor: pointer;
-}
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #334155 !important;
+/* Focus states */
+*:focus-visible {
   outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Mono font for numbers */
+.font-mono-numbers {
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Leaflet overrides for iOS look */
+.leaflet-container {
+  border-radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }

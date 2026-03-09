@@ -1,23 +1,36 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import { NAV_ITEMS } from "@/data/navigation";
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Settings } from 'lucide-react';
+
+const pageTitles: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/farm': 'Farm Areas',
+  '/pipeline': 'Pipeline',
+  '/agents': 'Agents',
+  '/compose': 'AI Compose',
+  '/deals': 'Deals',
+  '/alerts': 'Alerts',
+  '/heatmap': 'Heatmap',
+  '/predict': 'Predict',
+  '/documents': 'Documents',
+  '/settings': 'Settings',
+};
 
 export default function Topbar() {
   const pathname = usePathname();
-  const currentPage = NAV_ITEMS.find((n) => n.href === pathname || (n.href === "/farm" && pathname === "/"));
+  const title = pageTitles[pathname || ''] || 'PropScout';
 
   return (
-    <header className="sticky top-0 z-40 bg-bg/90 backdrop-blur-xl border-b border-border-nav px-4 md:px-6 py-3 flex items-center gap-3.5">
-      <div className="font-heading text-xl font-extrabold tracking-tight">
-        Prop<span className="text-brand">Scout</span>
-      </div>
-      <span className="text-border-hover hidden sm:inline">|</span>
-      <span className="text-text-muted text-sm hidden sm:inline">{currentPage?.label || "Farm"}</span>
-      <div className="flex-1" />
-      <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded border border-brand/30 bg-brand/10 text-brand">
-        v3.0
-      </span>
+    <header className="sticky top-0 z-30 h-14 frosted-glass border-b border-black/[0.06] flex items-center justify-between px-6">
+      <h2 className="text-[17px] font-semibold text-text-primary">{title}</h2>
+      <Link
+        href="/settings"
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-hover transition-colors"
+      >
+        <Settings size={18} className="text-text-secondary" />
+      </Link>
     </header>
   );
 }

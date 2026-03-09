@@ -1,143 +1,93 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { PRICE_DATA } from "@/data/price-predictions";
-import SectionTitle from "@/components/shared/section-title";
-import CardDark from "@/components/shared/card-dark";
-import Btn from "@/components/shared/btn";
+import { useState, useEffect } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { Sparkles, RefreshCw } from 'lucide-react';
+import PageHeader from '@/components/shared/page-header';
+import { predictions } from '@/data/predictions';
+import { generateMessage, SYSTEM_PROMPTS } from '@/lib/claude';
 
-const SUBURB_LIST = ["Sandton Central", "Sandhurst", "Bryanston", "Hyde Park", "Lonehill"];
+const suburbOptions = [
+  { id: 'sandhurst', name: 'Sandhurst' },
+  { id: 'sandton-central', name: 'Sandton Central' },
+  { id: 'bryanston', name: 'Bryanston' },
+  { id: 'lonehill', name: 'Lonehill' },
+  { id: 'hyde-park', name: 'Hyde Park' },
+];
 
 export default function PredictPage() {
-  const [sub, setSub] = useState("Sandton Central");
-  const data = PRICE_DATA[sub] || PRICE_DATA["Sandton Central"];
+  const [selected, setSelected] = useState('sandhurst');
+  const [aiAnalysis, setAiAnalysis] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
-  const W = 650;
-  const H = 180;
-  const max = sub === "Sandhurst" ? 16 : sub === "Hyde Park" ? 13 : 7;
+  const data = predictions[selected] || [];
 
-  const actPts = data
-    .filter((d) => d.a !== undefined)
-    .map((d) => `${(data.indexOf(d) / 9) * W},${H - ((d.a || 0) / max) * H}`)
-    .join(" ");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadAnalysis(); }, [selected]);
 
-  const predPts = data
-    .filter((d) => d.p !== undefined)
-    .map((d) => `${(data.indexOf(d) / 9) * W},${H - ((d.p || 0) / max) * H}`)
-    .join(" ");
+  async function loadAnalysis() {
+    setAiLoading(true);
+    const suburb = suburbOptions.find(s => s.id === selected)?.name || selected;
+    const lastActual = data.find(d => d.actual !== null && data.indexOf(d) === data.filter(d => d.actual !== null).length - 1);
+    const prompt = `Suburb: ${suburb}. Current price/m²: R${lastActual?.actual || 'N/A'}. Provide a 2-sentence market outlook for sellers.`;
+    const result = await generateMessage(prompt, SYSTEM_PROMPTS.predictAnalysis);
+    setAiAnalysis(result);
+    setAiLoading(false);
+  }
+
+  const todayIndex = data.findIndex(d => d.predicted !== null);
+  const todayMonth = todayIndex > 0 ? data[todayIndex - 1].month : '';
 
   return (
     <div>
-      <SectionTitle sub="ML-powered suburb price predictions. Help sellers time the market.">
-        📈 Area Price Predictor
-      </SectionTitle>
+      <PageHeader title="Price Predictor" subtitle="Suburb price trends and AI forecasts" />
 
-      <div className="flex gap-1.5 mb-4 flex-wrap">
-        {SUBURB_LIST.map((s) => (
-          <Btn
-            key={s}
-            color={sub === s ? "#10b981" : "#475569"}
-            variant={sub === s ? "filled" : "ghost"}
-            onClick={() => setSub(s)}
-            style={{ fontSize: 10, padding: "5px 10px" }}
-          >
-            {s}
-          </Btn>
+      {/* Suburb selector */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {suburbOptions.map(s => (
+          <button key={s.id} onClick={() => setSelected(s.id)} className={`px-4 py-2 text-[13px] font-medium rounded-full whitespace-nowrap transition-colors ${selected === s.id ? 'bg-accent-blue text-white' : 'bg-white text-text-secondary shadow-sm hover:bg-bg-hover'}`}>
+            {s.name}
+          </button>
         ))}
       </div>
 
-      <CardDark className="p-6">
-        <div className="flex justify-between mb-4 flex-wrap gap-2">
-          <div>
-            <div className="text-text-primary text-base font-bold">{sub}</div>
-            <div className="text-text-muted text-[11px]">Avg price/m² — actual vs predicted</div>
+      {/* Chart */}
+      <div className="bg-white rounded-card shadow-card p-5 mb-4">
+        <h3 className="text-[15px] font-semibold text-text-primary mb-4">Price per m² — {suburbOptions.find(s => s.id === selected)?.name}</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#AEAEB2' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: '#AEAEB2' }} axisLine={false} tickLine={false} tickFormatter={v => `R${(v/1000).toFixed(0)}k`} />
+            <Tooltip formatter={(v: number) => [`R ${v.toLocaleString()}`, '']} labelStyle={{ color: '#1D1D1F', fontWeight: 600 }} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+            {todayMonth && <ReferenceLine x={todayMonth} stroke="#AEAEB2" strokeDasharray="4 4" label={{ value: 'Today', position: 'top', fontSize: 11, fill: '#AEAEB2' }} />}
+            <Area type="monotone" dataKey="upper" stackId="band" stroke="none" fill="#34C75920" />
+            <Area type="monotone" dataKey="lower" stackId="band" stroke="none" fill="#FFFFFF" />
+            <Area type="monotone" dataKey="actual" stroke="#007AFF" fill="#007AFF20" strokeWidth={2} dot={false} connectNulls={false} />
+            <Area type="monotone" dataKey="predicted" stroke="#34C759" fill="none" strokeWidth={2} strokeDasharray="6 3" dot={false} connectNulls={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+        <div className="flex items-center gap-4 mt-3 text-[11px] text-text-tertiary">
+          <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-accent-blue rounded" /> Actual</div>
+          <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-accent-green rounded" style={{ borderTop: '2px dashed #34C759' }} /> Predicted</div>
+          <div className="flex items-center gap-1.5"><div className="w-4 h-2 bg-accent-green/10 rounded" /> Confidence</div>
+        </div>
+      </div>
+
+      {/* AI Analysis */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-card p-5 shadow-card border border-accent-purple/10">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-accent-purple" />
+            <span className="text-[14px] font-semibold text-text-primary">AI Market Analysis</span>
           </div>
-          <div className="text-right">
-            <div className="text-brand text-[22px] font-extrabold font-mono">+13.2%</div>
-            <div className="text-text-muted text-[10px]">6-month predicted</div>
-          </div>
+          <button onClick={loadAnalysis} disabled={aiLoading} className="p-1 rounded-lg hover:bg-white/50">
+            <RefreshCw size={14} className={`text-accent-purple ${aiLoading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
-
-        <div className="overflow-x-auto">
-          <svg
-            width="100%"
-            height={H}
-            viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="none"
-            className="min-w-[400px]"
-          >
-            {[0, 1, 2, 3].map((i) => (
-              <line
-                key={i}
-                x1={0}
-                y1={(i / 3) * H}
-                x2={W}
-                y2={(i / 3) * H}
-                stroke="#141c2e"
-              />
-            ))}
-            <polyline
-              points={actPts}
-              fill="none"
-              stroke="#0ea5e9"
-              strokeWidth="2.5"
-              strokeLinejoin="round"
-            />
-            <polyline
-              points={predPts}
-              fill="none"
-              stroke="#10b981"
-              strokeWidth="2.5"
-              strokeDasharray="6 4"
-              strokeLinejoin="round"
-            />
-            <line
-              x1={(6 / 9) * W}
-              y1={0}
-              x2={(6 / 9) * W}
-              y2={H}
-              stroke="#f59e0b"
-              strokeDasharray="4 3"
-            />
-          </svg>
-        </div>
-
-        <div className="flex justify-between mt-1.5">
-          {data.map((d) => (
-            <span key={d.m} className="text-text-dim text-[9px] font-mono">
-              {d.m}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex justify-center gap-5 mt-3">
-          {[
-            { l: "Actual", c: "#0ea5e9" },
-            { l: "Predicted", c: "#10b981" },
-            { l: "Today", c: "#f59e0b" },
-          ].map((x) => (
-            <div key={x.l} className="flex items-center gap-1.5">
-              <div className="w-3.5 h-0.5" style={{ background: x.c }} />
-              <span className="text-text-muted text-[10px]">{x.l}</span>
-            </div>
-          ))}
-        </div>
-      </CardDark>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
-        {[
-          { l: "3-Month", v: "+6.8%", s: "R5,480/m²", c: "#10b981" },
-          { l: "6-Month", v: "+13.2%", s: "R5,910/m²", c: "#0ea5e9" },
-          { l: "Best Sell Window", v: "Aug–Sep 26", s: "Peak seasonal + growth", c: "#f59e0b" },
-        ].map((p) => (
-          <CardDark key={p.l} className="p-3.5" style={{ borderTop: `2px solid ${p.c}` }}>
-            <div className="text-text-muted text-[9px] uppercase tracking-wider mb-1">{p.l}</div>
-            <div className="font-mono text-xl font-extrabold" style={{ color: p.c }}>
-              {p.v}
-            </div>
-            <div className="text-text-secondary text-[11px]">{p.s}</div>
-          </CardDark>
-        ))}
+        <p className="text-[13px] text-text-secondary leading-relaxed">
+          {aiLoading ? 'Analysing market data...' : aiAnalysis || 'Loading analysis...'}
+        </p>
       </div>
     </div>
   );
